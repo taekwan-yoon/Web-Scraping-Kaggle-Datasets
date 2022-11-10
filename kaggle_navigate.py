@@ -23,15 +23,25 @@ box.send_keys("food")
 
 time.sleep(2)
 
-#calendar_view = driver.find_element("xpath","//*[@id='site-content']/div[6]/div/div/div/div[1]/i[3]")
-#calendar_view.click()
+for i in range(1,6):
+    search = driver.find_element("xpath","//*[@id='site-content']/div[6]/div/div/div/ul/li[{}]/div[1]/a".format(i))
+    search.click()
+    time.sleep(2)
+    driver.back()
+    time.sleep(2)
+
+#//*[@id="site-content"]/div[6]/div/div/div/ul/li[1]/div[1]/a
+#//*[@id="site-content"]/div[6]/div/div/div/ul/li[2]/div[1]/a
+
+'''
+for i in range(1,6):
+    search = driver.find_element("xpath","//*[@id='site-content']/div[6]/div/div/div/ul/li[{}]/div[1]/a/div[2]/div".format(i))
+    time.sleep(2)
+    driver.back()
+    time.sleep(2)
+'''
 
 
-
-
-#//*[@id="1864"]/div/div[1]/div[1]
-
-# //*[@id="site-content"]/div[6]/div/div/div/ul/li[1]/div[1]/a
 
 
 #driver.navigate().back()
