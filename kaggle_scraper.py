@@ -1,15 +1,40 @@
 import kaggle  # import kaggle api module 
 
 def set_config(username):
+    '''
+    This function links the file with the Kaggle username (in ~/.kaggle/kaggle.json) for API authentication.
+    '''
     api = kaggle.api
     api.get_config_value(username)
     return
 
-def search(keyword, num_datasets):  # I still need to take account of what if user inputs a too large number (exceeds number of datasets in kaggle)
+def max_search(keyword):
+    '''
+    This function takes the keyword as the parameter and returns the total number of datasets associated with the keyword on Kaggle.
+    '''
+    max_search_num = 0
+    i = 1
+    while True:
+        try:
+            datasets = kaggle.api.datasets_list(search = keyword, page = i)
+            if datasets == []:  # if page doesn't contain any datasets, end the loop
+                break
+            i += 1  # increase page number by 1
+            max_search_num += len(datasets)  # get sum of all datasets in all non-empty pages
+        except:
+            break
+    return max_search_num
+
+def search(keyword, num_datasets):
     '''
     This function takes two parameters: a search keyword as the first parameter and the desired number of datasets to be scraped.
     Then it returns the datasets. 
     '''
+    max_search_num = max_search(keyword)  # get the maximum number of datasets associated with keyword
+    if num_datasets > max_search_num:  # if user input for desired number of datasets exceeds the maximum number of datasets
+        print("Since the desired number of datasets exceeds the current total number of datasets, the current total number of datasets ({}) will be returned".format(max_search_num))
+        num_datasets = max_search_num  # examine the maximum number of datasets
+
     if num_datasets <= 20:  # if desired number of datasets less than or equal to 20 (each page contains 20 datasets)
         # get the desired number of datasets from the first page
         datasets = kaggle.api.datasets_list(search = keyword, page = 1)[:num_datasets]
@@ -37,17 +62,6 @@ def get_specific_dataset(datasets, index):
     It returns the comprehensive, unrefined information about the dataset at the specified index.
     '''
     return datasets[index]
-
-
-"""
-def print_all_fields(dataset):
-    dataset_fields_dict = dataset.keys()
-    print('------------------------------------------')
-    for field in dataset_fields_dict:
-        print(f'{field} = {dataset[field]}')
-    print('------------------------------------------')
-"""
-
 
 def get_url(dataset):
     '''
@@ -205,9 +219,18 @@ def print_all(dataset):
             )
     print('---------------------------------------------------')
 
+""" # this function could be useful to examine every possible information that can be extracted from Kaggle API
+def print_all_fields(dataset):
+    dataset_fields_dict = dataset.keys()
+    print('------------------------------------------')
+    for field in dataset_fields_dict:
+        print(f'{field} = {dataset[field]}')
+    print('------------------------------------------')
+"""
+
 if __name__ == "__main__":
     set_config('taekwanyoon')
-    datasets = search('money', 50)
+    datasets = search('overfitting', 100)
     
     number = get_num_datasets(datasets)
     print(number)
