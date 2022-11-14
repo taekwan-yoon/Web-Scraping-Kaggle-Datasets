@@ -1,0 +1,9 @@
+To use the Kaggle API, install the kaggle package:
+    $ pip install kaggle
+
+An API token is required for authentication of API.
+    1. Go to www.kaggle.com
+    2. 'Account' tab  
+    # on MacOS, download the file on Kaggle  and move it to "~/.kaggle/kaggle.json"
+    3. 'Create new API token'  # generates a config file with username and an API key
+    4. The kaggle username will be needed to run the code.

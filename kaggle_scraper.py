@@ -1,192 +1,217 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options  # to silently run selenium
+import kaggle  # import kaggle api module 
 
-class ScrapeKaggle:
-    def __init__(self, url, path):
-        self.url = url  # url to dataset page (i.e., https://www.kaggle.com/datasets/ankitmishra0/narendra-modi-speeches)
-        # local path to chromedriver (Available at: https://chromedriver.chromium.org/downloads)
-        self.path = path
-        self.title = "Scraping title not done or failed."
-        self.usability = "Scraping usability not done or failed."
-        self.upvotes = "Scraping upvotes not done or failed."
-        self.description = "Scraping description not done or failed."
-        self.update_frequency = "Scraping update frequency not done or failed."
-        self.last_updated = "Scraping last updated not done or failed."
-        self.author = "Scraping author not done or failed."
-        self.license_ = "Scraping license not done or failed."
-        self.views = "Scraping views not done or failed."
-        self.downloads = "Scraping downloads not done or failed."
-        self.download_per_view = "Scraping download per view not done or failed."
-        self.download_size = "Scraping download size not done or failed."
+def set_config(username):
+    api = kaggle.api
+    api.get_config_value(username)
+    return
 
-    def scrape(self):
-        '''
-        This method modifies the attributes in __init__ by scraping web data of specified url using selenium through xpath. 
-        '''
-        
-        chrome_options = Options()
-        # silently runs selenium; otherwise, it opens the browser every time
-        chrome_options.add_argument("--headless")
+def search(keyword, num_datasets):  # I still need to take account of what if user inputs a too large number (exceeds number of datasets in kaggle)
+    '''
+    This function takes two parameters: a search keyword as the first parameter and the desired number of datasets to be scraped.
+    Then it returns the datasets. 
+    '''
+    if num_datasets <= 20:  # if desired number of datasets less than or equal to 20 (each page contains 20 datasets)
+        # get the desired number of datasets from the first page
+        datasets = kaggle.api.datasets_list(search = keyword, page = 1)[:num_datasets]
+    else:  # if desired number of datasets greater than 20
+        # get 20 datasets from the first page
+        datasets = kaggle.api.datasets_list(search = keyword, page = 1)
+        num_pages = num_datasets // 20 + 1  # total number of pages to be scraped
+        remainder = num_datasets % 20  # number of datasets to be scraped from last page
+        for i in range(2, num_pages):  # first page already scraped, so start from second page
+            # scrape all datasets starting from second page (if applicable)
+            datasets += kaggle.api.datasets_list(search = keyword, page = i)
+        # scrape remaining datasets from last page (if only some datasets are to be scraped from the last page)
+        datasets += kaggle.api.datasets_list(search = keyword , page = num_pages)[:remainder]        
+    return datasets
 
-        driver = webdriver.Chrome(self.path, options=chrome_options)
-        driver.get(self.url)
-        self.title = driver.find_element("xpath", "//*[@id='site-content']/div[2]/div[2]/div/div[2]/div[1]/h1").text
-        self.usability = driver.find_element("xpath", "//*[@id='site-content']/div[2]/div[5]/div[1]/div[2]/div/p/span").text
-        self.upvotes = driver.find_element("xpath", "//*[@id='site-content']/div[2]/div[2]/div/div[1]/div/div[1]/button[2]").text
-        self.description = driver.find_element("xpath", "//*[@id='site-content']/div[2]/div[5]/div[1]/div[1]/div[2]/div/div/div/p").text
-        self.update_frequency = driver.find_element("xpath", "//*[@id='site-content']/div[2]/div[5]/div[1]/div[2]/p[2]").text
-        self.last_updated = driver.find_element("xpath", "//*[@id='site-content']/div[2]/div[2]/div/div[1]/span/span[2]/span").text
-        self.author = driver.find_element("xpath", "//*[@id='site-content']/div[2]/div[2]/div/div[1]/span/span[1]").text
-        
-        i = 0
-        while i == 0:  # two possible xpaths for license
-            try:
-                self.license_ = driver.find_element("xpath", "//*[@id='site-content']/div[2]/div[5]/div[1]/div[2]/p[1]/a").text
-                i = 1
-            except:  # try other xpath if dysfunctional
-                self.license_ = driver.find_element("xpath", "//*[@id='site-content']/div[2]/div[5]/div[1]/div[2]/p[1]/p").text
-                i = 1
+def get_num_datasets(datasets):
+    '''
+    This function takes the datasets as the parameter and returns the description of the number of datasets as a string.
+    '''
+    return 'There are {num} datasets in the list'.format(num=len(datasets))
 
-        self.views = driver.find_element("xpath", "//*[@id='site-content']/div[2]/div[5]/div[4]/div[2]/div[1]/div/div[2]/h1").text
-        self.downloads = driver.find_element("xpath", "//*[@id='site-content']/div[2]/div[5]/div[4]/div[2]/div[1]/div/div[3]/h1").text
-        self.download_per_view = driver.find_element("xpath", "//*[@id='site-content']/div[2]/div[5]/div[4]/div[2]/div[1]/div/div[4]/h1").text
-        self.download_size = driver.find_element("xpath", "//*[@id='site-content']/div[2]/div[2]/div/div[1]/div/a/button/span").text.split()[1:]
-        
-        # fix formatting of scraped string of download size
-        for i in range(len(self.download_size)):
-            if "(" in self.download_size[i]:
-                self.download_size[i] = self.download_size[i].replace("(","")
-            elif ")" in self.download_size[i]:
-                self.download_size[i] = self.download_size[i].replace(")","")
-        self.download_size = " ".join(self.download_size)
-        
-        # terminate driver
-        driver.close()
-        driver.quit()
+def get_specific_dataset(datasets, index):
+    '''
+    This function takes the datasets as the first parameter and the index as the second parameter. 
+    It returns the comprehensive, unrefined information about the dataset at the specified index.
+    '''
+    return datasets[index]
 
-    def print_all(self):
-        '''
-        This method prints all current attributes (title, usability, upvotes, description, update frequency, 
-        data of last update, author, license, views, downloads, download per view, download size) of the dataset.
-        '''
-        print("---------------------------------------------------------------------------")
-        print("Title:", self.title)
-        print("Usability:", self.usability)
-        print("Upvotes:", self.upvotes)
-        print("Description:", self.description)
-        print("Update Frequency:", self.update_frequency)
-        print("Last Updated:", self.last_updated)
-        print("Author:", self.author)
-        print("License:", self.license_)
-        print("Views:", self.views)
-        print("Downloads:", self.downloads)
-        print("Download per View:", self.download_per_view)
-        print("Download Size:", self.download_size)
-        print("URL:", self.url)
-        print("---------------------------------------------------------------------------")
 
-    def get_title(self):
-        '''
-        This method returns the title of the dataset.
-        '''
-        return self.title
+"""
+def print_all_fields(dataset):
+    dataset_fields_dict = dataset.keys()
+    print('------------------------------------------')
+    for field in dataset_fields_dict:
+        print(f'{field} = {dataset[field]}')
+    print('------------------------------------------')
+"""
 
-    def get_usability(self):
-        '''
-        This method returns the usability of the dataset. 
-        '''
-        return self.usability
 
-    def get_upvotes(self):
-        '''
-        This method returns the upvotes of the dataset.
-        '''
-        return self.get_upvotes
-    
-    def get_description(self):
-        '''
-        This method returns the description of the dataset.
-        '''
-        return self.description
+def get_url(dataset):
+    '''
+    This function takes a dataset as the parameter and returns its url.
+    '''
+    return dataset['url']
 
-    def get_update_frequency(self):
-        '''
-        This method returns the update frequency of the dataset.
-        '''
-        return self.update_frequency
+def has_creator(dataset):
+    '''
+    This function takes a dataset as the parameter and returns True if there is a creator name -- otherwise, False.
+    '''
+    return dataset['hasCreatorName']
 
-    def get_last_updated(self):
-        '''
-        This method returns the last updated time of the dataset.
-        '''
-        return self.last_updated
+def get_creator(dataset):
+    '''
+    This function takes a dataset as the parameter and returns the name of its creator.
+    '''
+    # creator name exists and not empty
+    if (has_creator(dataset) == True) and (dataset['creatorNameNullable'] != ''):
+        return dataset['creatorNameNullable']
+    else:
+        return 'There is no available creator name.'
 
-    def get_author(self):
-        '''
-        This method returns the author of the dataset.
-        '''
-        return self.author
+def has_license(dataset):
+    '''
+    This function takes a dataset as the parameter and returns True if there is a license -- otherwise, False.
+    '''
+    return dataset['hasLicenseName']
 
-    def get_license(self):
-        '''
-        This method returns the license of the dataset.
-        '''
-        return self.license_
+def get_license(dataset):
+    '''
+    This function takes a dataset as the parameter and returns the license name.
+    '''
+    # license name exists and not empty
+    if (has_license(dataset) == True) and (dataset['licenseNameNullable'] != ''):
+        return dataset['licenseNameNullable']
+    else:
+        return 'There is no available license name.'
 
-    def get_views(self):
-        '''
-        This method returns the views of the dataset.
-        '''
-        return self.views
+def has_title(dataset):
+    '''
+    This function takes a dataset as the parameter and returns True if there is a title -- otherwise, False.
+    '''
+    return dataset['hasTitle']
 
-    def get_downloads(self):
-        '''
-        This method returns the number of downloads of the dataset.
-        '''
-        return self.downloads
+def get_title(dataset):
+    '''
+    This function takes a dataset as the parameter and returns the title.
+    '''
+    # title exists and not empty
+    if (has_title(dataset) == True) and (dataset['titleNullable'] != ''):
+        return dataset['titleNullable']
+    else:
+        return 'There is no available title for the dataset.'
 
-    def get_download_per_view(self):
-        '''
-        This method returns the ratio of the download per view of the dataset.
-        '''
-        return self.download_per_view
-    
-    def get_download_size(self):
-        '''
-        This method returns the download size of the dataset.
-        '''
-        return self.download_size
-    
-    def get_url(self):
-        '''
-        This method returns the url of the dataset.
-        '''
-        return self.url
+def has_usability(dataset):
+    '''
+    This function takes a dataset as the parameter and returns True if there is a usability -- otherwise, False.
+    '''
+    return dataset['hasUsabilityRating']
+
+def get_usability(dataset):
+    '''
+    This function takes a dataset as the parameter and returns its usability.
+    '''
+    if (has_usability(dataset) == True) and (dataset['usabilityRatingNullable'] != ''):
+        return str(round(float(dataset['usabilityRatingNullable']) * 10, 2)) # rounding to 2 decimal places fails when it is 10.00
+    else:
+        return 'There is no available usability rating for the dataset.'
+
+def has_subtitle(dataset):
+    '''
+    This function takes a dataset as the parameter and returns True if there is a subtitle -- otherwise, False.
+    '''
+    return dataset['hasSubtitle']
+
+def get_subtitle(dataset): 
+    '''
+    This function takes a dataset as the parameter and returns its subtitle.
+    '''
+    # subtitle exists and not empty
+    if (has_subtitle(dataset) == True) and (dataset['subtitle'] != ''):
+        return dataset['subtitle']
+    else:
+        return 'There is no available subtitle.'
+
+def get_last_updated(dataset):
+    '''
+    This function takes a dataset as the parameter and returns its last updated date.
+    '''
+    return dataset['lastUpdated']
+
+def get_download_count(dataset):
+    '''
+    This function takes a dataset as the parameter and returns its download count.
+    '''
+    return dataset['downloadCount']
+
+def get_view_count(dataset):
+    '''
+    This function takes a dataset as the parameter and returns its view count.
+    '''
+    return dataset['viewCount']
+
+def get_vote_count(dataset):
+    '''
+    This function takes a dataset as the parameter and returns its upvote count.
+    '''
+    return dataset['voteCount']
+
+def has_download_size(dataset):
+    '''
+    This function takes a dataset as the parameter and returns True if there is a download size -- otherwise, False.
+    '''
+    return dataset['hasTotalBytes']
+
+def get_download_size(dataset):
+    '''
+    This function takes a dataset as the parameter and returns its download size.
+    '''
+    # download size exists and not empty
+    if (has_download_size(dataset) == True) and (dataset['totalBytes'] != ''):
+        return dataset['totalBytes']
+    else:
+        return 'There is no available download size for the dataset.'
+
+def get_tags(dataset):
+    '''
+    This function takes a dataset as the parameter and returns its tags.
+    '''
+    tags = []
+    for i in range(len(dataset['tags'])):  # for every element in the list of tags
+        tags.append(dataset['tags'][i]['nameNullable'])  # tag element assigned to 'nameNullable' in dictionary
+    return tags
+
+def print_all(dataset):
+    '''
+    This function takes a dataset as the parameter and prints its title, subtitle, url, tags, creator name, view count, vote count, download count, usability, last updated date, download size, and license name.
+    '''
+    print('---------------------------------------------------')
+    print(
+            'title = {title}\nsubtitle = {subtitle}\nurl = {url}\ntags = {tags}\ncreator = {creator}\nview count = {view_count}\nvote count = {vote_count}\ndownload count = {download_count}\nusability = {usability}\nlast updated = {last_updated}\ndownload size = {download_size}\nlicense = {license_}'.format(title = get_title(dataset),
+                     subtitle = get_subtitle(dataset),
+                     url = get_url(dataset),
+                     tags = get_tags(dataset),
+                     creator = get_creator(dataset),
+                     view_count = get_view_count(dataset),
+                     vote_count = get_vote_count(dataset),
+                     download_count = get_download_count(dataset),
+                     usability = get_usability(dataset),
+                     last_updated = get_last_updated(dataset),
+                     download_size = get_download_size(dataset),
+                     license_ = get_license(dataset)
+                                    )
+            )
+    print('---------------------------------------------------')
 
 if __name__ == "__main__":
-    driver_path = "/Users/taekwan/Desktop/Web-Scraping-Kaggle-Datasets/webdriver/chromedriver"
-
-    sample1 = ScrapeKaggle("https://www.kaggle.com/datasets/matthieugimbert/french-bakery-daily-sales", driver_path)
-    sample1.scrape()
-    sample1.print_all()
-
-    sample2 = ScrapeKaggle("https://www.kaggle.com/datasets/ankitmishra0/narendra-modi-speeches", driver_path)
-    sample2.scrape()
-    sample2.print_all()
+    set_config('taekwanyoon')
+    datasets = search('money', 50)
     
-    sample3 = ScrapeKaggle("https://www.kaggle.com/datasets/thedevastator/housing-prices-and-access-to-cannabis", driver_path)
-    sample3.scrape()
-    sample3.print_all()
-
-    sample4 = ScrapeKaggle("https://www.kaggle.com/datasets/dilwong/flightprices", driver_path)
-    sample4.scrape()
-    sample4.print_all()
-
-    sample5 = ScrapeKaggle("https://www.kaggle.com/datasets/mattop/world-series-2022-baseball-phillies-vs-astros", driver_path)
-    sample5.scrape()
-    sample5.print_all()
-
-
-
-
-
+    number = get_num_datasets(datasets)
+    print(number)
+    
+    for i in range(len(datasets)):
+        dataset = get_specific_dataset(datasets, i)
+        print_all(dataset)

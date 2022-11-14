@@ -30,28 +30,10 @@ for i in range(1,6):
     driver.back()
     time.sleep(2)
 
-#//*[@id="site-content"]/div[6]/div/div/div/ul/li[1]/div[1]/a
-#//*[@id="site-content"]/div[6]/div/div/div/ul/li[2]/div[1]/a
-
-'''
-for i in range(1,6):
-    search = driver.find_element("xpath","//*[@id='site-content']/div[6]/div/div/div/ul/li[{}]/div[1]/a/div[2]/div".format(i))
-    time.sleep(2)
-    driver.back()
-    time.sleep(2)
-'''
-
-
-
-
-#driver.navigate().back()
+# need to find a way to scroll down by pixel if I want to scrape more datasets
 
 
 #driver.find_element("xpath","//*[@id='site-content']/div[5]/div/div/div[1]/div/input").send_keys(Keys.PAGE_DOWN)
-
-
-
-
 
 time.sleep(2)
 print(1)
