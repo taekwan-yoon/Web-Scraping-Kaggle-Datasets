@@ -4,6 +4,58 @@ To use the Kaggle API, install the kaggle package:
 An API token is required for authentication of API.
     1. Go to www.kaggle.com
     2. 'Account' tab  
-    # on MacOS, download the file on Kaggle  and move it to "~/.kaggle/kaggle.json"
-    3. 'Create new API token'  # generates a config file with username and an API key
+    3. Click 'Create new API token'  # generates and downloades a config file with username and an API key
+    # on MacOS, download the file on Kaggle and move it to "~/.kaggle/kaggle.json"
     4. The kaggle username will be needed to run the code.
+
+To run the program:
+    # import module
+        $ import kaggle_scraper
+
+    # Initialize a Kaggle search
+        $ <variable1> = ScrapeKaggle(<username>, <keyword>, <desired number of datasets>)
+        $ <variable1>.set_config()
+        $ <variable1>.search()
+            # all datasets in search are stored in <variable1>.datasets
+    
+        # Example:
+            $ search1 = ScrapeKaggle('taekwanyoon', 'food', 50)
+            $ search1.set_config()
+            $ search1.search()
+            # all datasets are stored in search1.datasets
+
+
+    # Extract desired information
+        $ <variable2> = <variable1>.get_num_datasets()               # print number of datasets
+        $ print(<variable2>) 
+
+        $ <variable3> = <variable1>.get_specific_dataset(<index>)    # select a single dataset by the specified index
+        
+        $ url = <variable1>.get_url(<variable3>)    # url
+        $ print(url)  # print url of the dataset  
+            # <variable1>.get_creator(<variable3>)           # creator name
+            # <variable1>.get_license(<variable3>)           # license name
+            # <variable1>.get_title(<variable3>)             # title
+            # <variable1>.get_usability(<variable3>)         # usability
+            # <variable1>.get_subtitle(<variable3>)          # subtitle
+            # <variable1>.get_last_updated(<variable3>)      # last updated
+            # <variable1>.get_download_count(<variable3>)    # download count
+            # <variable1>.get_view_count(<variable3>)        # view count
+            # <variable1>.get_vote_count(<variable3>)        # vote count
+            # <variable1>.get_download_size(<variable3>)     # download size (in bytes)
+            # <variable1>.get_tags(<variable3>)              # tags
+        
+        $ <variable1>.print_all(<variable3>)        # print all fields
+
+
+        # Example:
+            $ print(search1._get_num_datasets())            # print number of datasets
+            $ dataset1 = search1.get_specific_dataset(0)
+            $ print(dataset1)                               # print a single dataset at the index of 0
+            $ print(search1.get_url(dataset1))              # print url
+            $ print(search1.get_creator(dataset1))          # print creator name
+            $ search1.print_all(dataset1)                   # print all fields
+
+            $ for i in range(len(search1.datasets)):        # print all fields of all datasets in search
+            $   dataset = search1.get_specific_dataset(i)
+            $   search1.print_all(dataset)
