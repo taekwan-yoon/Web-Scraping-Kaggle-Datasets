@@ -162,16 +162,9 @@ class ScrapeKaggle:
         for i in range(len(dataset['tags'])): # for every element in tag list
             tags.append(dataset['tags'][i]['nameNullable']) # tags element assigned to 'nameNullable' in dictionary
         return tags
-    """
-    def print_all(self, dataset):
-        '''
-        This method takes a dataset as the parameter and prints its title, subtitle, url, tags, creator name, view count, vote count, download count, usability, last updated date, download size, and license name.
-        '''
-        print('------------------------------------------')
-        print('title = {title}\nsubtitle = {subtitle}'.format(title = self.get_title(dataset), subtitle = self.get_subtitle(dataset)))
-        print('------------------------------------------')
-    """
-    '''
+    
+    # This method prints out all fields that could be scraped, so it could be useful if something needs to be updated or when troubleshooting
+    ''' 
     def print_all_fields(self, dataset):
         dataset_fields_dict = dataset.keys()
         print('------------------------------------------')

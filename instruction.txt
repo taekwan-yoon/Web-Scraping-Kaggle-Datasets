@@ -9,8 +9,9 @@ An API token is required for authentication of API.
     4. The kaggle username will be needed to run the code.
 
 To run the program:
-    # import module
-        $ import kaggle_scraper
+    # import modules
+        $ import kaggle
+        $ from kaggle_scraper import ScrapeKaggle
 
     # Initialize a Kaggle search
         $ <variable1> = ScrapeKaggle(<username>, <keyword>, <desired number of datasets>)
